@@ -8,55 +8,31 @@ import { logger } from './middleware/logger.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
+import notesRouter from './routes/notesRoutes.js';
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ====================
-// Middleware
-// ====================
-
-app.use(logger);
-app.use(cors());
-app.use(express.json());
-
-// ====================
-// Маршрути
-// ====================
-
-app.get('/notes', (req, res) => {
-  res.status(200).json({
-    message: 'Retrieved all notes',
-  });
-});
-
-app.get('/notes/:noteId', (req, res) => {
-  const { noteId } = req.params;
-
-  res.status(200).json({
-    message: `Retrieved note with ID: ${noteId}`,
-  });
-});
-
-// Тестовий маршрут
-app.get('/test-error', () => {
-  throw new Error('Simulated server error');
-});
-
-// ====================
-// Middleware
-// ====================
-
-app.use(notFoundHandler);
-app.use(errorHandler);
-
-// ====================
-// Запуск сервера
-// ====================
-
+// Підключення до MongoDB
 await connectMongoDB();
 
+// Middleware
+app.use(logger);
+app.use(express.json());
+app.use(cors());
+
+// Маршрути
+app.use(notesRouter);
+
+// Middleware для 404
+app.use(notFoundHandler);
+
+// Middleware для обробки помилок
+app.use(errorHandler);
+
+// Запуск сервера
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
