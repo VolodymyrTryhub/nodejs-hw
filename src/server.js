@@ -10,6 +10,8 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 import notesRouter from './routes/notesRoutes.js';
 
+import { errors } from 'celebrate';
+
 dotenv.config();
 
 const app = express();
@@ -28,6 +30,8 @@ app.use(notesRouter);
 
 // Middleware для 404
 app.use(notFoundHandler);
+
+app.use(errors()); // Middleware для обробки помилок валідації celebrate
 
 // Middleware для обробки помилок
 app.use(errorHandler);
