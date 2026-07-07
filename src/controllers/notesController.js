@@ -5,30 +5,42 @@ import { Note } from '../models/note.js';
 export const getAllNotes = async (req, res) => {
   const { page = 1, perPage = 10, tag, search } = req.query;
 
-  const filter = {};
+  const limit = Number(perPage);
+  const skip = (Number(page) - 1) * limit;
+
+  let notesQuery = Note.find();
+  let countQuery = Note.find();
 
   if (tag) {
-    filter.tag = tag;
+    notesQuery = notesQuery.where('tag').equals(tag);
+    countQuery = countQuery.where('tag').equals(tag);
   }
 
   if (search) {
-    filter.$or = [
-      { title: { $regex: search, $options: 'i' } },
-      { content: { $regex: search, $options: 'i' } },
-    ];
+    notesQuery = notesQuery.where({
+      $or: [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
+      ],
+    });
+
+    countQuery = countQuery.where({
+      $or: [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
+      ],
+    });
   }
 
-  const skip = (Number(page) - 1) * Number(perPage);
+  const totalNotes = await countQuery.countDocuments();
 
-  const totalNotes = await Note.countDocuments(filter);
-
-  const notes = await Note.find(filter).skip(skip).limit(Number(perPage));
+  const notes = await notesQuery.skip(skip).limit(limit);
 
   res.status(200).json({
     page: Number(page),
-    perPage: Number(perPage),
+    perPage: limit,
     totalNotes,
-    totalPages: Math.ceil(totalNotes / Number(perPage)),
+    totalPages: Math.ceil(totalNotes / limit),
     notes,
   });
 };
