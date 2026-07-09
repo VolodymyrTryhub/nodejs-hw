@@ -28,9 +28,10 @@ export const getAllNotes = async (req, res) => {
     countQuery = countQuery.where(searchFilter);
   }
 
-  const totalNotes = await countQuery.countDocuments();
-
-  const notes = await notesQuery.skip(skip).limit(limit);
+  const [totalNotes, notes] = await Promise.all([
+    countQuery.countDocuments(),
+    notesQuery.skip(skip).limit(limit),
+  ]);
 
   res.status(200).json({
     page: Number(page),
