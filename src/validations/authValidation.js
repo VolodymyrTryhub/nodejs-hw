@@ -1,6 +1,4 @@
-// src/validations/authValidation.js
-
-import { Joi } from 'celebrate';
+import Joi from 'joi';
 
 export const registerUserSchema = Joi.object({
   email: Joi.string().email().required(),
@@ -9,5 +7,5 @@ export const registerUserSchema = Joi.object({
 
 export const loginUserSchema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(8).required(),
+  password: Joi.string().required(),
 });

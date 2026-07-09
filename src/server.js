@@ -29,7 +29,7 @@ app.use(cookieParser());
 
 // Маршрути
 app.use(notesRouter);
-app.use('/auth', authRoutes);
+app.use(authRoutes);
 
 // Middleware для обробки помилок celebrate
 app.use(errors());

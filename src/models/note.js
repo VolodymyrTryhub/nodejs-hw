@@ -7,11 +7,13 @@ const noteSchema = new Schema(
     title: {
       type: String,
       required: true,
+      trim: true,
     },
 
     content: {
       type: String,
       default: '',
+      trim: true,
     },
 
     tag: {
@@ -31,5 +33,8 @@ const noteSchema = new Schema(
     versionKey: false,
   },
 );
+
+// Індекс для швидкого пошуку нотаток користувача за тегом
+noteSchema.index({ tag: 1, userId: 1 });
 
 export const Note = model('Note', noteSchema);
