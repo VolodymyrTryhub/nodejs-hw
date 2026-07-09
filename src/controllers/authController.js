@@ -9,13 +9,13 @@ import {
   clearSessionCookies,
 } from '../services/auth.js';
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   const { email, password } = req.body;
 
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
-    throw createHttpError(400, 'Email in use');
+    return next(createHttpError(400, 'Email in use'));
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -32,19 +32,19 @@ export const registerUser = async (req, res) => {
   res.status(201).json(user);
 };
 
-export const loginUser = async (req, res) => {
+export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw createHttpError(401, 'Invalid credentials');
+    return next(createHttpError(401, 'Invalid credentials'));
   }
 
   const isValidPassword = await bcrypt.compare(password, user.password);
 
   if (!isValidPassword) {
-    throw createHttpError(401, 'Invalid credentials');
+    return next(createHttpError(401, 'Invalid credentials'));
   }
 
   await Session.deleteOne({ userId: user._id });
@@ -56,7 +56,7 @@ export const loginUser = async (req, res) => {
   res.status(200).json(user);
 };
 
-export const refreshUserSession = async (req, res) => {
+export const refreshUserSession = async (req, res, next) => {
   const { sessionId, refreshToken } = req.cookies;
 
   const session = await Session.findOne({
@@ -65,7 +65,7 @@ export const refreshUserSession = async (req, res) => {
   });
 
   if (!session) {
-    throw createHttpError(401, 'Session not found');
+    return next(createHttpError(401, 'Session not found'));
   }
 
   if (new Date() > session.refreshTokenValidUntil) {
@@ -75,7 +75,7 @@ export const refreshUserSession = async (req, res) => {
 
     clearSessionCookies(res);
 
-    throw createHttpError(401, 'Session token expired');
+    return next(createHttpError(401, 'Session token expired'));
   }
 
   await Session.deleteOne({
